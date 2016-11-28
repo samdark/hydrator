@@ -19,6 +19,12 @@ class Hydrator
      */
     private $map;
 
+    /**
+     * Local cache of reflection class instances
+     * @var array
+     */
+    private $reflectionClassMap = [];
+
     public function __construct(array $map)
     {
         $this->map = $map;
@@ -28,17 +34,17 @@ class Hydrator
      * Creates an instance of a class filled with data accoding to map
      *
      * @param array $data
-     * @param string $class
+     * @param string $className
      * @return object
      */
-    public function hydrate($data, $class)
+    public function hydrate($data, $className)
     {
-        $reflection = new \ReflectionClass($class);
+        $reflection = $this->getReflectionClass($className);
         $object = $reflection->newInstanceWithoutConstructor();
 
         foreach ($this->map as $dataKey => $propertyName) {
             if (!$reflection->hasProperty($propertyName)) {
-                throw new \InvalidArgumentException("There's no $propertyName property in $class.");
+                throw new \InvalidArgumentException("There's no $propertyName property in $className.");
             }
 
             if (isset($data[$dataKey])) {
@@ -76,5 +82,19 @@ class Hydrator
         }
 
         return $data;
+    }
+
+    /**
+     * Returns instance of reflection class for class name passed
+     *
+     * @param string $className
+     * @return \ReflectionClass
+     */
+    protected function getReflectionClass($className)
+    {
+        if (!isset($this->reflectionClassMap[$className])) {
+            $this->reflectionClassMap[$className] = new \ReflectionClass($className);
+        }
+        return $this->reflectionClassMap[$className];
     }
 }
