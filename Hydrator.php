@@ -74,9 +74,7 @@ class Hydrator
         foreach ($this->map as $dataKey => $propertyName) {
             if ($reflection->hasProperty($propertyName)) {
                 $property = $reflection->getProperty($propertyName);
-                if ($property->isPrivate() || $property->isProtected()) {
-                    $property->setAccessible(true);
-                }
+                $property->setAccessible(true);
                 $data[$dataKey] = $property->getValue($object);
             }
         }
