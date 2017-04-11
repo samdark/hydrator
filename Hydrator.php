@@ -36,11 +36,44 @@ class Hydrator
      * @param array $data
      * @param string $className
      * @return object
+     *
+     * @since 1.0.2
      */
     public function hydrate($data, $className)
     {
         $reflection = $this->getReflectionClass($className);
         $object = $reflection->newInstanceWithoutConstructor();
+
+        foreach ($this->map as $dataKey => $propertyName) {
+            if (!$reflection->hasProperty($propertyName)) {
+                throw new \InvalidArgumentException("There's no $propertyName property in $className.");
+            }
+
+            if (isset($data[$dataKey])) {
+                $property = $reflection->getProperty($propertyName);
+                if ($property->isPrivate() || $property->isProtected()) {
+                    $property->setAccessible(true);
+                }
+                $property->setValue($object, $data[$dataKey]);
+            }
+        }
+
+        return $object;
+    }
+
+    /**
+     * Fills an object passed with data accoding to map
+     *
+     * @param array $data
+     * @param object $object
+     * @return object
+     *
+     * @since 1.0.2
+     */
+    public function hydrateInto($data, $object)
+    {
+        $className = get_class($object);
+        $reflection = $this->getReflectionClass($className);
 
         foreach ($this->map as $dataKey => $propertyName) {
             if (!$reflection->hasProperty($propertyName)) {
@@ -87,6 +120,7 @@ class Hydrator
      *
      * @param string $className
      * @return \ReflectionClass
+     * @throws \ReflectionException
      */
     protected function getReflectionClass($className)
     {

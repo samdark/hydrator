@@ -3,11 +3,11 @@ Hydrator
 
 Hydrator can be used for two purposes:
 
-- To extract data from a class to be futher stored in a persistent storage.
-- To instantiate a class having its data.
+- To extract data from a class to be further stored in a persistent storage.
+- To fill an object with data or create a new instance of a class filled with data.
 
 In both cases it is saving and filling protected and private properties without calling
-any methods which leads to ability to persist state of an object with properly incapsulated
+any methods which leads to ability to persist state of an object with properly encapsulated
 data.
 
 [![Latest Stable Version](https://poser.pugx.org/samdark/hydrator/v/stable.png)](https://packagist.org/packages/samdark/hydrator)
@@ -17,7 +17,7 @@ data.
 
 ## Installation
 
-The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
+The preferred way to install this package is through [composer](http://getcomposer.org/download/).
 
 ```
 composer require --prefer-dist samdark/hydrator
@@ -98,4 +98,19 @@ $postHydrator = new \samdark\hydrator\Hydrator([
 
 $post = $postHydrator->hydrate($data, Post::class);
 echo $post->getId();
+```
+
+Filling existing post object with data:
+
+```php
+$data = load_from_database();
+
+$postHydrator = new \samdark\hydrator\Hydrator([
+    'title' => 'title',
+    'text' => 'text',
+]);
+
+$post = get_post();
+$post = $postHydrator->hydrateInto($data, $post);
+echo $post->getTitle();
 ```
