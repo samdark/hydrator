@@ -51,9 +51,7 @@ class Hydrator
 
             if (isset($data[$dataKey])) {
                 $property = $reflection->getProperty($propertyName);
-                if ($property->isPrivate() || $property->isProtected()) {
-                    $property->setAccessible(true);
-                }
+                $property->setAccessible(true);
                 $property->setValue($object, $data[$dataKey]);
             }
         }
@@ -82,9 +80,7 @@ class Hydrator
 
             if (isset($data[$dataKey])) {
                 $property = $reflection->getProperty($propertyName);
-                if ($property->isPrivate() || $property->isProtected()) {
-                    $property->setAccessible(true);
-                }
+                $property->setAccessible(true);
                 $property->setValue($object, $data[$dataKey]);
             }
         }
