@@ -102,7 +102,7 @@ class Hydrator
     {
         $data = [];
 
-        $reflection = new \ReflectionObject($object);
+        $reflection = $this->getReflectionClassFromObject($object);
 
         foreach ($this->map as $dataKey => $propertyName) {
             if ($reflection->hasProperty($propertyName)) {
@@ -126,6 +126,23 @@ class Hydrator
     {
         if (!isset($this->reflectionClassMap[$className])) {
             $this->reflectionClassMap[$className] = new \ReflectionClass($className);
+        }
+        return $this->reflectionClassMap[$className];
+    }
+
+    /**
+     * Returns instance of reflection class for an object passed
+     *
+     * @param object $object
+     * @return \ReflectionClass
+     * @throws \ReflectionException
+     */
+    protected function getReflectionClassFromObject($object)
+    {
+        $className = get_class($object);
+
+        if (!isset($this->reflectionClassMap[$className])) {
+            $this->reflectionClassMap[$className] = new \ReflectionObject($object);
         }
         return $this->reflectionClassMap[$className];
     }
