@@ -31,7 +31,7 @@ class Hydrator
     }
 
     /**
-     * Creates an instance of a class filled with data accoding to map
+     * Creates an instance of a class filled with data according to map
      *
      * @param array $data
      * @param string $className
@@ -60,7 +60,7 @@ class Hydrator
     }
 
     /**
-     * Fills an object passed with data accoding to map
+     * Fills an object passed with data according to map
      *
      * @param array $data
      * @param object $object
