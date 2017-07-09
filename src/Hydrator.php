@@ -1,23 +1,14 @@
 <?php
-namespace samdark\hydrator;
 
-/**
- * Hydrator can be used for two purposes:
- *
- * - To extract data from a class to be futher stored in a persistent storage.
- * - To instantiate a class having its data.
- *
- * In both cases it is saving and filling protected and private properties without calling
- * any methods which leads to ability to persist state of an object with properly incapsulated
- * data.
- */
-class Hydrator
-{
-    /**
-     * Mapping of keys in data array to property names.
-     * @var array
-     */
+namespace Samdark\Hydrator;
+
+use Samdark\Hydrator\Strategy\StrategyInterface;
+
+class Hydrator {
+
     private $map;
+
+    private $strategies = [];
 
     /**
      * Local cache of reflection class instances
@@ -28,6 +19,15 @@ class Hydrator
     public function __construct(array $map)
     {
         $this->map = $map;
+    }
+
+    /**
+     * @param $dataKey
+     * @param StrategyInterface $strategy
+     */
+    public function addStrategy($dataKey, StrategyInterface $strategy)
+    {
+        $this->strategies[$dataKey] = $strategy;
     }
 
     /**
@@ -50,13 +50,30 @@ class Hydrator
             }
 
             if (isset($data[$dataKey])) {
+                $value = $this->hydrateValue($dataKey, $data[$dataKey]);
                 $property = $reflection->getProperty($propertyName);
                 $property->setAccessible(true);
-                $property->setValue($object, $data[$dataKey]);
+                $property->setValue($object, $value);
             }
         }
 
         return $object;
+    }
+
+    /**
+     * Extract data from field
+     *
+     * @param $dataKey
+     * @param $data
+     * @return mixed
+     */
+    protected function hydrateValue($dataKey, $data)
+    {
+        if (!isset($this->strategies[$dataKey])) {
+            return $data;
+        }
+        /** @var StrategyInterface $strategy */
+        return $this->strategies[$dataKey]->hydrate($data);
     }
 
     /**
@@ -105,11 +122,27 @@ class Hydrator
             if ($reflection->hasProperty($propertyName)) {
                 $property = $reflection->getProperty($propertyName);
                 $property->setAccessible(true);
-                $data[$dataKey] = $property->getValue($object);
+                $value = $property->getValue($object);
+                $data[$dataKey] = $this->extractValue($dataKey, $value);
             }
         }
 
         return $data;
+    }
+
+    /**
+     * Extract data from on field
+     *
+     * @param $dataKey
+     * @param $value
+     * @return mixed
+     */
+    protected function extractValue($dataKey, $value)
+    {
+        if (!isset($this->strategies[$dataKey])) {
+            return $value;
+        }
+        return $this->strategies[$dataKey]->extract($value);
     }
 
     /**
