@@ -2,7 +2,7 @@
 
 namespace Samdark\Hydrator;
 
-use Common\Data\Hydrator\Strategy\StrategyInterface;
+use Samdark\Hydrator\Strategy\StrategyInterface;
 
 class Hydrator {
 
