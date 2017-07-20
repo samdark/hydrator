@@ -1,6 +1,6 @@
 <?php
 namespace samdark\hydrator\tests;
-use samdark\hydrator\Hydrator;
+use samdark\Hydrator\Hydrator;
 
 class HydratorTest extends \PHPUnit_Framework_TestCase
 {
