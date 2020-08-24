@@ -44,17 +44,7 @@ class Hydrator
         $reflection = $this->getReflectionClass($className);
         $object = $reflection->newInstanceWithoutConstructor();
 
-        foreach ($this->map as $dataKey => $propertyName) {
-            if (!$reflection->hasProperty($propertyName)) {
-                throw new \InvalidArgumentException("There's no $propertyName property in $className.");
-            }
-
-            if (isset($data[$dataKey])) {
-                $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
-                $property->setValue($object, $data[$dataKey]);
-            }
-        }
+        $this->hydrateInto($data, $object);
 
         return $object;
     }
@@ -70,19 +60,9 @@ class Hydrator
      */
     public function hydrateInto($data, $object)
     {
-        $className = get_class($object);
-        $reflection = $this->getReflectionClass($className);
-
         foreach ($this->map as $dataKey => $propertyName) {
-            if (!$reflection->hasProperty($propertyName)) {
-                throw new \InvalidArgumentException("There's no $propertyName property in $className.");
-            }
-
-            if (isset($data[$dataKey])) {
-                $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
-                $property->setValue($object, $data[$dataKey]);
-            }
+            if (isset($data[$dataKey]))
+                $this->setProperty($object, $propertyName, $data[$dataKey]);
         }
 
         return $object;
@@ -98,15 +78,8 @@ class Hydrator
     {
         $data = [];
 
-        $className = get_class($object);
-        $reflection = $this->getReflectionClass($className);
-
         foreach ($this->map as $dataKey => $propertyName) {
-            if ($reflection->hasProperty($propertyName)) {
-                $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
-                $data[$dataKey] = $property->getValue($object);
-            }
+            $data[$dataKey] = $this->getProperty($object, $propertyName);
         }
 
         return $data;
@@ -125,5 +98,50 @@ class Hydrator
             $this->reflectionClassMap[$className] = new \ReflectionClass($className);
         }
         return $this->reflectionClassMap[$className];
+    }
+    
+    /**
+     * Set value to object property using his inheritance
+     *
+     * @param object $object
+     * @param string $propertyName
+     * @param mixed $value
+     */
+    private function setProperty($object, $propertyName, $value)
+    {
+        $className = get_class($object);
+        $reflection = $this->getReflectionClass($className);
+
+        do {
+            if ($reflection->hasProperty($propertyName)) {
+                $property = $reflection->getProperty($propertyName);
+                $property->setAccessible(true);
+                $property->setValue($object, $value);
+                return ;
+            }
+        } while ($reflection = $reflection->getParentClass());
+
+        throw new \InvalidArgumentException("There's no $propertyName property in $className.");
+    }
+
+    /**
+     * @param object $object
+     * @param string $propertyName
+     * @return mixed|null
+     */
+    private function getProperty($object, $propertyName)
+    {
+        $className = get_class($object);
+        $reflection = $this->getReflectionClass($className);
+
+        do {
+            if ($reflection->hasProperty($propertyName)) {
+                $property = $reflection->getProperty($propertyName);
+                $property->setAccessible(true);
+                return $property->getValue($object);
+            }
+        } while ($reflection = $reflection->getParentClass());
+
+        return null;
     }
 }
