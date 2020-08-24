@@ -45,12 +45,13 @@ class Hydrator
         $object = $reflection->newInstanceWithoutConstructor();
 
         foreach ($this->map as $dataKey => $propertyName) {
-            if (!$reflection->hasProperty($propertyName)) {
+            try {
+                $property = $reflection->getProperty($propertyName);
+            } catch (\ReflectionException $e) {
                 throw new \InvalidArgumentException("There's no $propertyName property in $className.");
             }
 
             if (isset($data[$dataKey])) {
-                $property = $reflection->getProperty($propertyName);
                 $property->setAccessible(true);
                 $property->setValue($object, $data[$dataKey]);
             }
