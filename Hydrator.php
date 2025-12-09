@@ -52,7 +52,9 @@ class Hydrator
             }
 
             if (isset($data[$dataKey])) {
-                $property->setAccessible(true);
+                if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+                    $property->setAccessible(true);
+                }
                 $property->setValue($object, $data[$dataKey]);
             }
         }
@@ -81,7 +83,9 @@ class Hydrator
 
             if (isset($data[$dataKey])) {
                 $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
+                if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+                    $property->setAccessible(true);
+                }
                 $property->setValue($object, $data[$dataKey]);
             }
         }
@@ -105,7 +109,9 @@ class Hydrator
         foreach ($this->map as $dataKey => $propertyName) {
             if ($reflection->hasProperty($propertyName)) {
                 $property = $reflection->getProperty($propertyName);
-                $property->setAccessible(true);
+                if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+                    $property->setAccessible(true);
+                }
                 $data[$dataKey] = $property->getValue($object);
             }
         }
